@@ -118,7 +118,7 @@
 
     select,
     input[type="number"],
-    input[type="time"] {
+    .time-select {
       width: 100%;
       min-height: 42px;
       border: 1px solid var(--line);
@@ -130,7 +130,8 @@
     }
 
     select:focus,
-    input:focus {
+    input:focus,
+    .time-select:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
@@ -177,7 +178,7 @@
 
     .summary {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 14px;
       margin-bottom: 18px;
     }
@@ -332,11 +333,12 @@
       font-size: 11px;
     }
 
-    .inputs input {
+    .inputs .time-select {
       min-width: 0;
-      padding-inline: 5px;
+      padding: 0 4px;
       min-height: 34px;
       font-size: 12px;
+      appearance: auto;
     }
 
     .actions {
@@ -448,7 +450,7 @@
       }
 
       .summary {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .day {
@@ -532,9 +534,9 @@
       }
 
       .calendar {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
         min-width: 0;
       }
 
@@ -543,9 +545,9 @@
       }
 
       .day {
-        min-height: unset;
-        border-radius: 18px;
-        padding: 13px;
+        min-height: 190px;
+        border-radius: 16px;
+        padding: 9px;
         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
       }
 
@@ -556,15 +558,15 @@
       .date-block {
         display: flex;
         align-items: baseline;
-        gap: 8px;
+        gap: 6px;
       }
 
       .date {
-        font-size: 24px;
+        font-size: 20px;
       }
 
       .day-name {
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .badge {
@@ -595,21 +597,76 @@
     }
 
     @media (max-width: 430px) {
+      .app {
+        width: calc(100% - 12px);
+      }
+
       .summary {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
       }
 
       .toolbar {
         grid-template-columns: 1fr;
       }
 
-      .inputs,
+      .calendar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+      }
+
+      .day {
+        padding: 7px;
+        gap: 6px;
+        min-height: 178px;
+      }
+
+      .inputs {
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+      }
+
       .actions {
         grid-template-columns: 1fr;
+        gap: 5px;
+      }
+
+      .actions .btn {
+        min-height: 30px;
+        padding: 6px 4px;
+        font-size: 11px;
+      }
+
+      .inputs label {
+        font-size: 10px;
+      }
+
+      .inputs .time-select {
+        font-size: 11px;
+        min-height: 32px;
+        padding: 0 2px;
+      }
+
+      .badge {
+        max-width: 55px;
+        font-size: 9px;
+        padding: 3px 5px;
+      }
+
+      .empty-info {
+        font-size: 11px;
+        padding: 7px 4px;
+      }
+
+      .shift strong {
+        font-size: 12px;
+      }
+
+      .shift small {
+        font-size: 10px;
       }
 
       .summary-card small {
-        display: block;
+        display: none;
       }
     }
 
@@ -676,9 +733,9 @@
       }
 
       .summary {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 3mm;
-        margin-bottom: 4mm;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 2mm;
+        margin-bottom: 3mm;
       }
 
       .summary-card {
@@ -855,6 +912,12 @@
       </div>
 
       <div class="summary-card">
+        <div class="label-text">Przerwy</div>
+        <div class="value" id="breakHours">0 min</div>
+        <small>Suma przerw ze zmian.</small>
+      </div>
+
+      <div class="summary-card">
         <div class="label-text">Dni wolne</div>
         <div class="value" id="freeDays">0</div>
         <small>Dni oznaczone jako wolne.</small>
@@ -876,7 +939,7 @@
     </section>
 
     <section class="note">
-      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
+      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Godziny wybierasz co 30 minut. Przerwy liczą się jako 5 minut za każdą pełną godzinę zmiany + 15 minut od 6h i kolejne 15 minut od 9h. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
     </section>
   </main>
 
@@ -894,6 +957,7 @@
     const totalHoursEl = document.getElementById("totalHours");
     const lateHoursEl = document.getElementById("lateHours");
     const latePercentEl = document.getElementById("latePercent");
+    const breakHoursEl = document.getElementById("breakHours");
     const freeDaysEl = document.getElementById("freeDays");
 
     let schedule = loadSchedule();
@@ -945,6 +1009,50 @@
         : `${rounded.toFixed(2).replace(".", ",")} h`;
     }
 
+    function formatBreak(minutes) {
+      if (minutes < 60) {
+        return `${minutes} min`;
+      }
+
+      const hours = Math.floor(minutes / 60);
+      const rest = minutes % 60;
+      return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
+    }
+
+    function breakMinutesForShift(start, end) {
+      const duration = shiftDurationMinutes(start, end);
+      const fullHours = Math.floor(duration / 60);
+
+      // Zasady:
+      // - 5 minut za każdą pełną godzinę zmiany,
+      // - od 6 godzin dodatkowe 15 minut,
+      // - od 9 godzin kolejne dodatkowe 15 minut.
+      let minutes = fullHours * 5;
+
+      if (duration >= 6 * 60) {
+        minutes += 15;
+      }
+
+      if (duration >= 9 * 60) {
+        minutes += 15;
+      }
+
+      return minutes;
+    }
+
+    function buildTimeOptions(selectedValue) {
+      let options = "";
+
+      for (let hour = 0; hour < 24; hour++) {
+        for (const minute of [0, 30]) {
+          const value = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+          options += `<option value="${value}"${value === selectedValue ? " selected" : ""}>${value}</option>`;
+        }
+      }
+
+      return options;
+    }
+
     function shiftDurationMinutes(start, end) {
       let startMin = timeToMinutes(start);
       let endMin = timeToMinutes(end);
@@ -985,6 +1093,7 @@
     function calculateMonthStats(year, month) {
       let totalMinutes = 0;
       let lateMinutes = 0;
+      let totalBreakMinutes = 0;
       let freeDays = 0;
 
       getMonthEntries(year, month).forEach(([, data]) => {
@@ -995,12 +1104,14 @@
         data.shifts.forEach((shift) => {
           totalMinutes += shiftDurationMinutes(shift.start, shift.end);
           lateMinutes += overlapMinutes(shift.start, shift.end);
+          totalBreakMinutes += breakMinutesForShift(shift.start, shift.end);
         });
       });
 
       return {
         totalMinutes,
         lateMinutes,
+        totalBreakMinutes,
         freeDays,
         totalHours: minutesToHours(totalMinutes),
         lateHours: minutesToHours(lateMinutes),
@@ -1072,11 +1183,15 @@
       inputs.innerHTML = `
         <div>
           <label>Od</label>
-          <input type="time" class="start" value="08:00" aria-label="Godzina rozpoczęcia" />
+          <select class="start time-select" aria-label="Godzina rozpoczęcia">
+            ${buildTimeOptions("08:00")}
+          </select>
         </div>
         <div>
           <label>Do</label>
-          <input type="time" class="end" value="16:00" aria-label="Godzina zakończenia" />
+          <select class="end time-select" aria-label="Godzina zakończenia">
+            ${buildTimeOptions("16:00")}
+          </select>
         </div>
       `;
 
@@ -1141,13 +1256,14 @@
       data.shifts.forEach((shift, index) => {
         const duration = minutesToHours(shiftDurationMinutes(shift.start, shift.end));
         const late = minutesToHours(overlapMinutes(shift.start, shift.end));
+        const breakMinutes = breakMinutesForShift(shift.start, shift.end);
 
         const row = document.createElement("div");
         row.className = `shift${late > 0 ? " late" : ""}`;
         row.innerHTML = `
           <div>
             <strong>${shift.start}–${shift.end}</strong>
-            <small>Razem: ${formatHours(duration)} | 16–20: ${formatHours(late)}</small>
+            <small>Razem: ${formatHours(duration)} | 16–20: ${formatHours(late)} | Przerwa: ${formatBreak(breakMinutes)}</small>
           </div>
         `;
 
@@ -1179,6 +1295,7 @@
       totalHoursEl.textContent = formatHours(stats.totalHours);
       lateHoursEl.textContent = formatHours(stats.lateHours);
       latePercentEl.textContent = `${Math.round(stats.latePercent * 100) / 100}%`.replace(".", ",");
+      breakHoursEl.textContent = formatBreak(stats.totalBreakMinutes);
       freeDaysEl.textContent = stats.freeDays;
     }
 
@@ -1196,6 +1313,8 @@
           sumaGodzin: Math.round(stats.totalHours * 100) / 100,
           godziny16do20: Math.round(stats.lateHours * 100) / 100,
           procent16do20: Math.round(stats.latePercent * 100) / 100,
+          przerwyMinuty: stats.totalBreakMinutes,
+          przerwyTekst: formatBreak(stats.totalBreakMinutes),
           dniWolne: stats.freeDays
         },
         dni: entries.map(([date, data]) => ({
@@ -1205,7 +1324,8 @@
             od: shift.start,
             do: shift.end,
             godziny: Math.round(minutesToHours(shiftDurationMinutes(shift.start, shift.end)) * 100) / 100,
-            godziny16do20: Math.round(minutesToHours(overlapMinutes(shift.start, shift.end)) * 100) / 100
+            godziny16do20: Math.round(minutesToHours(overlapMinutes(shift.start, shift.end)) * 100) / 100,
+            przerwaMinuty: breakMinutesForShift(shift.start, shift.end)
           }))
         }))
       };
