@@ -178,7 +178,7 @@
 
     .summary {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
       margin-bottom: 18px;
     }
@@ -372,6 +372,18 @@
       background: #f8fafc;
     }
 
+    .day-break-info {
+      color: #854d0e;
+      background: #fff7df;
+      border: 1px solid #facc15;
+      border-radius: 12px;
+      padding: 7px 6px;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1.25;
+      text-align: center;
+    }
+
     .shift {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 26px;
@@ -450,7 +462,7 @@
       }
 
       .summary {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .day {
@@ -652,9 +664,10 @@
         padding: 3px 5px;
       }
 
-      .empty-info {
-        font-size: 11px;
-        padding: 7px 4px;
+      .empty-info,
+      .day-break-info {
+        font-size: 10.5px;
+        padding: 6px 4px;
       }
 
       .shift strong {
@@ -733,9 +746,9 @@
       }
 
       .summary {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 2mm;
-        margin-bottom: 3mm;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3mm;
+        margin-bottom: 4mm;
       }
 
       .summary-card {
@@ -828,9 +841,10 @@
         font-size: 5.8pt;
       }
 
-      .empty-info {
-        padding: 1mm;
-        font-size: 6.2pt;
+      .empty-info,
+      .day-break-info {
+        padding: 0.8mm;
+        font-size: 5.8pt;
         border-radius: 0;
       }
 
@@ -912,12 +926,6 @@
       </div>
 
       <div class="summary-card">
-        <div class="label-text">Przerwy</div>
-        <div class="value" id="breakHours">0 min</div>
-        <small>Suma przerw ze zmian.</small>
-      </div>
-
-      <div class="summary-card">
         <div class="label-text">Dni wolne</div>
         <div class="value" id="freeDays">0</div>
         <small>Dni oznaczone jako wolne.</small>
@@ -939,7 +947,7 @@
     </section>
 
     <section class="note">
-      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Godziny wybierasz co 30 minut. Przerwy liczą się jako 5 minut za każdą pełną godzinę zmiany + 15 minut od 6h i kolejne 15 minut od 9h. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
+      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Godziny wybierasz co 30 minut. Przerwa pokazuje się bezpośrednio na kafelku danego dnia i liczy się jako 5 minut za każdą pełną godzinę zmiany + 15 minut od 6h i kolejne 15 minut od 9h. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
     </section>
   </main>
 
@@ -957,7 +965,6 @@
     const totalHoursEl = document.getElementById("totalHours");
     const lateHoursEl = document.getElementById("lateHours");
     const latePercentEl = document.getElementById("latePercent");
-    const breakHoursEl = document.getElementById("breakHours");
     const freeDaysEl = document.getElementById("freeDays");
 
     let schedule = loadSchedule();
@@ -1093,7 +1100,6 @@
     function calculateMonthStats(year, month) {
       let totalMinutes = 0;
       let lateMinutes = 0;
-      let totalBreakMinutes = 0;
       let freeDays = 0;
 
       getMonthEntries(year, month).forEach(([, data]) => {
@@ -1104,14 +1110,12 @@
         data.shifts.forEach((shift) => {
           totalMinutes += shiftDurationMinutes(shift.start, shift.end);
           lateMinutes += overlapMinutes(shift.start, shift.end);
-          totalBreakMinutes += breakMinutesForShift(shift.start, shift.end);
         });
       });
 
       return {
         totalMinutes,
         lateMinutes,
-        totalBreakMinutes,
         freeDays,
         totalHours: minutesToHours(totalMinutes),
         lateHours: minutesToHours(lateMinutes),
@@ -1253,6 +1257,16 @@
         shifts.appendChild(free);
       }
 
+      if (data.shifts.length > 0) {
+        const dayMinutes = data.shifts.reduce((sum, shift) => sum + shiftDurationMinutes(shift.start, shift.end), 0);
+        const dayBreakMinutes = data.shifts.reduce((sum, shift) => sum + breakMinutesForShift(shift.start, shift.end), 0);
+
+        const daySummary = document.createElement("div");
+        daySummary.className = "day-break-info";
+        daySummary.textContent = `Przerwa dnia: ${formatBreak(dayBreakMinutes)} | Praca: ${formatHours(minutesToHours(dayMinutes))}`;
+        shifts.appendChild(daySummary);
+      }
+
       data.shifts.forEach((shift, index) => {
         const duration = minutesToHours(shiftDurationMinutes(shift.start, shift.end));
         const late = minutesToHours(overlapMinutes(shift.start, shift.end));
@@ -1295,7 +1309,6 @@
       totalHoursEl.textContent = formatHours(stats.totalHours);
       lateHoursEl.textContent = formatHours(stats.lateHours);
       latePercentEl.textContent = `${Math.round(stats.latePercent * 100) / 100}%`.replace(".", ",");
-      breakHoursEl.textContent = formatBreak(stats.totalBreakMinutes);
       freeDaysEl.textContent = stats.freeDays;
     }
 
@@ -1313,8 +1326,6 @@
           sumaGodzin: Math.round(stats.totalHours * 100) / 100,
           godziny16do20: Math.round(stats.lateHours * 100) / 100,
           procent16do20: Math.round(stats.latePercent * 100) / 100,
-          przerwyMinuty: stats.totalBreakMinutes,
-          przerwyTekst: formatBreak(stats.totalBreakMinutes),
           dniWolne: stats.freeDays
         },
         dni: entries.map(([date, data]) => ({
