@@ -251,7 +251,7 @@
 
     .day {
       min-width: 0;
-      min-height: 198px;
+      min-height: 226px;
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 15px;
@@ -266,7 +266,7 @@
       background: #f6f8fb;
       border-style: dashed;
       box-shadow: none;
-      min-height: 198px;
+      min-height: 226px;
     }
 
     .day.free {
@@ -344,8 +344,8 @@
 
     .actions {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 7px;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
     }
 
     .actions .btn {
@@ -383,6 +383,43 @@
       font-weight: 850;
       line-height: 1.25;
       text-align: center;
+      white-space: pre-line;
+    }
+
+    .quick-templates {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+    }
+
+    .template-btn {
+      min-height: 26px;
+      border-radius: 9px;
+      padding: 4px 3px;
+      background: #f1f5f9;
+      color: #1e3a8a;
+      border: 1px solid #dbeafe;
+      font-size: 10px;
+      font-weight: 850;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .template-btn:hover {
+      background: #dbeafe;
+    }
+
+    .copy-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+
+    .copy-row .btn {
+      min-height: 28px;
+      padding: 5px 4px;
+      font-size: 10.5px;
     }
 
     .shift {
@@ -414,6 +451,8 @@
       color: var(--muted);
       font-size: 11px;
       overflow-wrap: anywhere;
+      white-space: pre-line;
+      line-height: 1.2;
     }
 
     .remove {
@@ -467,7 +506,7 @@
       }
 
       .day {
-        min-height: 190px;
+        min-height: 218px;
       }
     }
 
@@ -558,9 +597,9 @@
       }
 
       .day {
-        min-height: 190px;
+        min-height: 222px;
         border-radius: 16px;
-        padding: 9px;
+        padding: 8px;
         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
       }
 
@@ -630,7 +669,7 @@
       .day {
         padding: 7px;
         gap: 6px;
-        min-height: 178px;
+        min-height: 216px;
       }
 
       .inputs {
@@ -639,8 +678,29 @@
       }
 
       .actions {
-        grid-template-columns: 1fr;
-        gap: 5px;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+      }
+
+      .quick-templates {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 3px;
+      }
+
+      .template-btn {
+        font-size: 9.2px;
+        min-height: 24px;
+        padding: 3px 2px;
+      }
+
+      .copy-row {
+        gap: 3px;
+      }
+
+      .copy-row .btn {
+        font-size: 9.5px;
+        min-height: 25px;
+        padding: 4px 2px;
       }
 
       .actions .btn {
@@ -752,6 +812,8 @@
       .note,
       .actions,
       .inputs,
+      .quick-templates,
+      .copy-row,
       .remove {
         display: none !important;
       }
@@ -918,8 +980,8 @@
         background: #fff !important;
         color: #000 !important;
         padding: 0.4mm !important;
-        font-size: 4.8pt !important;
-        line-height: 1.05 !important;
+        font-size: 4.6pt !important;
+        line-height: 1.02 !important;
         font-weight: 700 !important;
         text-align: center !important;
         overflow: hidden !important;
@@ -1033,7 +1095,7 @@
     </section>
 
     <section class="note">
-      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Godziny wybierasz co 30 minut. Przerwa pokazuje się bezpośrednio na kafelku danego dnia w formacie „Praca | Przerwa” i liczy się jako 5 minut za każdą pełną godzinę zmiany + 15 minut od 6h i kolejne 15 minut od 9h. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
+      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Godziny wybierasz co 30 minut. Na kafelku widać pracę, przerwę i czas netto w osobnych liniach. Możesz też używać szybkich szablonów zmian oraz kopiowania na następny dzień albo kolejny tydzień. Przerwa liczy się jako 5 minut za każdą pełną godzinę zmiany + 15 minut od 6h i kolejne 15 minut od 9h. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
     </section>
   </main>
 
@@ -1131,6 +1193,31 @@
       }
 
       return minutes;
+    }
+
+    function netMinutesForShift(start, end) {
+      return Math.max(0, shiftDurationMinutes(start, end) - breakMinutesForShift(start, end));
+    }
+
+    function addDaysToDateKey(key, daysToAdd) {
+      const [year, month, day] = key.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      date.setDate(date.getDate() + daysToAdd);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function copyDayShifts(sourceKey, daysToAdd) {
+      const source = ensureDay(sourceKey);
+
+      if (source.shifts.length === 0) {
+        alert("Najpierw dodaj zmianę w tym dniu.");
+        return;
+      }
+
+      const targetKey = addDaysToDateKey(sourceKey, daysToAdd);
+      const target = ensureDay(targetKey);
+      target.free = false;
+      target.shifts = source.shifts.map((shift) => ({ ...shift }));
     }
 
     const timeValues = Array.from({ length: 48 }, (_, index) => {
@@ -1294,6 +1381,14 @@
         </div>
       `;
 
+      const templates = document.createElement("div");
+      templates.className = "quick-templates";
+      templates.innerHTML = `
+        <button type="button" class="template-btn" data-action="template" data-key="${key}" data-start="09:00" data-end="15:00">9–15</button>
+        <button type="button" class="template-btn" data-action="template" data-key="${key}" data-start="09:00" data-end="17:00">9–17</button>
+        <button type="button" class="template-btn" data-action="template" data-key="${key}" data-start="14:00" data-end="20:00">14–20</button>
+      `;
+
       const actions = document.createElement("div");
       actions.className = "actions";
 
@@ -1312,6 +1407,13 @@
       freeBtn.textContent = data.free ? "Usuń wolne" : "Wolne";
 
       actions.append(addBtn, freeBtn);
+
+      const copyRow = document.createElement("div");
+      copyRow.className = "copy-row";
+      copyRow.innerHTML = `
+        <button type="button" class="btn secondary" data-action="copy-next" data-key="${key}">Kopiuj +1</button>
+        <button type="button" class="btn secondary" data-action="copy-week" data-key="${key}">Kopiuj tydz.</button>
+      `;
 
       const shifts = document.createElement("div");
       shifts.className = "shifts";
@@ -1333,10 +1435,11 @@
       if (data.shifts.length > 0) {
         const dayMinutes = data.shifts.reduce((sum, shift) => sum + shiftDurationMinutes(shift.start, shift.end), 0);
         const dayBreakMinutes = data.shifts.reduce((sum, shift) => sum + breakMinutesForShift(shift.start, shift.end), 0);
+        const dayNetMinutes = Math.max(0, dayMinutes - dayBreakMinutes);
 
         const daySummary = document.createElement("div");
         daySummary.className = "day-break-info";
-        daySummary.textContent = `Praca: ${formatHours(minutesToHours(dayMinutes))} | Przerwa: ${formatBreak(dayBreakMinutes)}`;
+        daySummary.textContent = `Praca: ${formatHours(minutesToHours(dayMinutes))}\nPrzerwa: ${formatBreak(dayBreakMinutes)}\nNetto: ${formatHours(minutesToHours(dayNetMinutes))}`;
         shifts.appendChild(daySummary);
       }
 
@@ -1349,7 +1452,7 @@
         row.innerHTML = `
           <div>
             <strong>${shift.start}–${shift.end}</strong>
-            <small>Razem: ${formatHours(duration)} | 16–20: ${formatHours(late)}</small>
+            <small>Razem: ${formatHours(duration)}\n16–20: ${formatHours(late)}</small>
           </div>
         `;
 
@@ -1366,7 +1469,7 @@
         shifts.appendChild(row);
       });
 
-      card.append(head, inputs, actions, shifts);
+      card.append(head, inputs, templates, actions, copyRow, shifts);
       return card;
     }
 
@@ -1405,7 +1508,8 @@
             do: shift.end,
             godziny: Math.round(minutesToHours(shiftDurationMinutes(shift.start, shift.end)) * 100) / 100,
             godziny16do20: Math.round(minutesToHours(overlapMinutes(shift.start, shift.end)) * 100) / 100,
-            przerwaMinuty: breakMinutesForShift(shift.start, shift.end)
+            przerwaMinuty: breakMinutesForShift(shift.start, shift.end),
+            godzinyNetto: Math.round(minutesToHours(netMinutesForShift(shift.start, shift.end)) * 100) / 100
           }))
         }))
       };
@@ -1433,6 +1537,14 @@
       const card = button.closest(".day");
       const dayData = ensureDay(key);
 
+      if (action === "template") {
+        dayData.free = false;
+        dayData.shifts.push({
+          start: button.dataset.start,
+          end: button.dataset.end
+        });
+      }
+
       if (action === "add-shift") {
         const start = card.querySelector(".start").value;
         const end = card.querySelector(".end").value;
@@ -1457,6 +1569,14 @@
       if (action === "remove-shift") {
         const index = Number(button.dataset.index);
         dayData.shifts.splice(index, 1);
+      }
+
+      if (action === "copy-next") {
+        copyDayShifts(key, 1);
+      }
+
+      if (action === "copy-week") {
+        copyDayShifts(key, 7);
       }
 
       saveSchedule();
