@@ -38,6 +38,7 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.35;
+      overflow-x: hidden;
     }
 
     button,
@@ -52,9 +53,9 @@
     }
 
     .app {
-      width: min(1500px, 100%);
+      width: min(1280px, calc(100% - 24px));
       margin: 0 auto;
-      padding: 22px;
+      padding: 18px 0;
     }
 
     .hero {
@@ -218,15 +219,17 @@
       border: 1px solid rgba(214, 222, 234, 0.9);
       border-radius: 24px;
       box-shadow: var(--shadow);
-      padding: 14px;
-      overflow: hidden;
+      padding: 12px;
+      overflow: visible;
+      width: 100%;
     }
 
     .weekdays,
     .calendar {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 10px;
+      gap: 8px;
+      width: 100%;
     }
 
     .weekdays {
@@ -246,14 +249,14 @@
 
     .day {
       min-width: 0;
-      min-height: 212px;
+      min-height: 198px;
       background: #fff;
       border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 10px;
+      border-radius: 15px;
+      padding: 8px;
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 7px;
       overflow: hidden;
     }
 
@@ -261,7 +264,7 @@
       background: #f6f8fb;
       border-style: dashed;
       box-shadow: none;
-      min-height: 212px;
+      min-height: 198px;
     }
 
     .day.free {
@@ -286,7 +289,7 @@
     }
 
     .date {
-      font-size: 20px;
+      font-size: 18px;
       line-height: 1;
       font-weight: 950;
     }
@@ -300,12 +303,12 @@
 
     .badge {
       flex: 0 0 auto;
-      max-width: 90px;
+      max-width: 70px;
       overflow: hidden;
       text-overflow: ellipsis;
       border-radius: 999px;
-      padding: 4px 8px;
-      font-size: 11px;
+      padding: 3px 6px;
+      font-size: 10px;
       font-weight: 900;
       background: #eef4ff;
       color: #1e40af;
@@ -320,7 +323,7 @@
     .inputs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 7px;
+      gap: 5px;
       min-width: 0;
     }
 
@@ -331,9 +334,9 @@
 
     .inputs input {
       min-width: 0;
-      padding-inline: 7px;
-      min-height: 38px;
-      font-size: 13px;
+      padding-inline: 5px;
+      min-height: 34px;
+      font-size: 12px;
     }
 
     .actions {
@@ -343,9 +346,9 @@
     }
 
     .actions .btn {
-      min-height: 36px;
-      padding: 8px 7px;
-      font-size: 12px;
+      min-height: 33px;
+      padding: 7px 6px;
+      font-size: 11.5px;
       white-space: normal;
     }
 
@@ -427,18 +430,11 @@
       color: var(--text);
     }
 
-    @media (min-width: 1201px) {
-      .calendar-shell {
-        overflow-x: auto;
-      }
-
-      .weekdays,
-      .calendar {
-        min-width: 1180px;
-      }
-    }
-
     @media (max-width: 1200px) {
+      .app {
+        width: min(1000px, calc(100% - 20px));
+      }
+
       .hero {
         grid-template-columns: 1fr;
       }
@@ -455,23 +451,26 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .calendar-shell {
-        overflow-x: auto;
+      .day {
+        min-height: 190px;
       }
+    }
 
+    @media (max-width: 980px) {
       .weekdays,
       .calendar {
-        min-width: 980px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
-      .day {
-        min-height: 205px;
+      .day.empty {
+        display: none;
       }
     }
 
     @media (max-width: 760px) {
       .app {
-        padding: 12px;
+        width: calc(100% - 20px);
+        padding: 12px 0;
       }
 
       .hero {
