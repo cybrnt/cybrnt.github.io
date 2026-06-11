@@ -686,191 +686,276 @@
     @media print {
       @page {
         size: A4 landscape;
-        margin: 7mm;
+        margin: 4mm;
       }
 
       * {
+        box-shadow: none !important;
+        text-shadow: none !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
 
       html,
       body {
-        width: 297mm;
-        min-height: 210mm;
-        background: white;
-        overflow: hidden;
+        width: auto !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        overflow: visible !important;
       }
 
       body {
-        transform: scale(0.96);
-        transform-origin: top left;
+        transform: none !important;
+        font-family: Arial, Helvetica, sans-serif !important;
       }
 
       .app {
-        width: 297mm;
-        max-width: none;
-        padding: 0;
-        margin: 0;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
 
       .hero {
-        display: block;
-        margin-bottom: 5mm;
+        display: block !important;
+        margin: 0 0 2mm 0 !important;
       }
 
       header {
-        min-height: 0;
-        padding: 5mm 6mm;
-        border-radius: 0;
-        box-shadow: none;
-        background: #1d4ed8 !important;
+        display: block !important;
+        min-height: 0 !important;
+        padding: 2mm 3mm !important;
+        border: 1px solid #000 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
       }
 
       header h1 {
-        font-size: 18pt;
-        margin-bottom: 1mm;
-        letter-spacing: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 12pt !important;
+        line-height: 1.1 !important;
+        color: #000 !important;
+        letter-spacing: 0 !important;
       }
 
       header p {
-        font-size: 8.5pt;
-        max-width: none;
+        display: none !important;
       }
 
       .toolbar,
       .note,
       .actions,
-      .inputs {
+      .inputs,
+      .remove {
         display: none !important;
       }
 
       .summary {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 3mm;
-        margin-bottom: 4mm;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.5mm !important;
+        margin: 0 0 2mm 0 !important;
       }
 
       .summary-card {
-        box-shadow: none;
-        border-radius: 0;
-        padding: 2.2mm 3mm;
-        border: 1px solid #cbd5e1;
+        border: 1px solid #000 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        padding: 1.2mm 1.8mm !important;
+        min-height: 0 !important;
       }
 
       .summary-card .label-text {
-        font-size: 7pt;
-        margin-bottom: 0.8mm;
+        margin: 0 0 0.5mm 0 !important;
+        color: #000 !important;
+        font-size: 6pt !important;
+        line-height: 1 !important;
+        letter-spacing: 0 !important;
       }
 
       .summary-card .value {
-        font-size: 15pt;
+        color: #000 !important;
+        font-size: 12pt !important;
+        line-height: 1 !important;
+        letter-spacing: 0 !important;
       }
 
       .summary-card small {
-        display: none;
+        display: none !important;
       }
 
       .calendar-shell {
-        box-shadow: none;
-        border: 0;
-        border-radius: 0;
-        padding: 0;
-        overflow: visible;
-        background: white;
+        width: 100% !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
       }
 
       .weekdays,
       .calendar {
         display: grid !important;
-        grid-template-columns: repeat(7, 1fr);
-        min-width: 0;
-        gap: 1.4mm;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        gap: 1mm !important;
       }
 
       .weekdays {
-        margin-bottom: 1.4mm;
-        padding: 0;
+        margin: 0 0 1mm 0 !important;
+        padding: 0 !important;
       }
 
       .weekday {
-        font-size: 7pt;
-        padding: 0.8mm 0;
-        color: #334155;
-        border: 1px solid #cbd5e1;
-        background: #f1f5f9;
+        display: block !important;
+        border: 1px solid #000 !important;
+        background: #fff !important;
+        color: #000 !important;
+        padding: 0.6mm 0 !important;
+        font-size: 6pt !important;
+        line-height: 1 !important;
+        text-align: center !important;
+        font-weight: 800 !important;
       }
 
       .day {
-        min-height: 25mm;
-        height: 25mm;
-        border-radius: 0;
-        padding: 1.4mm;
-        gap: 1mm;
-        box-shadow: none;
-        break-inside: avoid;
-        page-break-inside: avoid;
-        overflow: hidden;
+        height: 20.5mm !important;
+        min-height: 20.5mm !important;
+        max-height: 20.5mm !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+        border: 1px solid #000 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        padding: 1mm !important;
+        gap: 0.5mm !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
 
       .day.empty {
-        display: block;
-        min-height: 25mm;
-        height: 25mm;
-        background: #f8fafc;
-        border: 1px dashed #cbd5e1;
+        display: block !important;
+        height: 20.5mm !important;
+        min-height: 20.5mm !important;
+        max-height: 20.5mm !important;
+        border: 1px solid #bbb !important;
+        background: #fff !important;
+      }
+
+      .day.free,
+      .day.weekend,
+      .day.weekend:not(.free) {
+        background: #fff !important;
+        border-color: #000 !important;
       }
 
       .day-head {
-        align-items: center;
-        gap: 1mm;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 1mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .date-block {
+        display: flex !important;
+        align-items: baseline !important;
+        gap: 1mm !important;
+        min-width: 0 !important;
       }
 
       .date {
-        font-size: 10pt;
+        color: #000 !important;
+        font-size: 8pt !important;
+        line-height: 1 !important;
+        font-weight: 900 !important;
       }
 
       .day-name {
-        margin-top: 0;
-        font-size: 6.5pt;
+        color: #000 !important;
+        font-size: 5.5pt !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        font-weight: 700 !important;
       }
 
-      .badge {
-        max-width: 17mm;
-        padding: 0.6mm 1.2mm;
-        font-size: 5.8pt;
+      .badge,
+      .badge.free-badge {
+        flex: 0 0 auto !important;
+        max-width: none !important;
+        border: 1px solid #000 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        padding: 0.3mm 0.8mm !important;
+        font-size: 5pt !important;
+        line-height: 1 !important;
+        font-weight: 800 !important;
+      }
+
+      .shifts {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.4mm !important;
+        margin: 0 !important;
+        min-width: 0 !important;
       }
 
       .empty-info,
       .day-break-info {
-        padding: 0.8mm;
-        font-size: 5.8pt;
-        border-radius: 0;
+        border: 1px solid #000 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        padding: 0.4mm !important;
+        font-size: 4.8pt !important;
+        line-height: 1.05 !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        overflow: hidden !important;
       }
 
-      .shifts {
-        gap: 0.8mm;
-      }
-
-      .shift {
-        grid-template-columns: 1fr;
-        border-radius: 0;
-        padding: 0.8mm 1mm;
-        gap: 0;
+      .shift,
+      .shift.late {
+        display: block !important;
+        border: 0 !important;
+        border-top: 1px solid #999 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        padding: 0.4mm 0 0 0 !important;
+        margin: 0 !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
       }
 
       .shift strong {
-        font-size: 7pt;
-        margin-bottom: 0;
+        display: block !important;
+        color: #000 !important;
+        font-size: 5.8pt !important;
+        line-height: 1.05 !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
       }
 
       .shift small {
-        font-size: 5.8pt;
-        line-height: 1.15;
-      }
-
-      .remove {
-        display: none !important;
+        display: block !important;
+        color: #000 !important;
+        font-size: 4.5pt !important;
+        line-height: 1.05 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        text-overflow: clip !important;
       }
     }
   </style>
