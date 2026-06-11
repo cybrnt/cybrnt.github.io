@@ -251,7 +251,7 @@
 
     .day {
       min-width: 0;
-      min-height: 226px;
+      min-height: 206px;
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 15px;
@@ -266,7 +266,7 @@
       background: #f6f8fb;
       border-style: dashed;
       box-shadow: none;
-      min-height: 226px;
+      min-height: 206px;
     }
 
     .day.free {
@@ -345,7 +345,7 @@
     .actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 5px;
+      gap: 7px;
     }
 
     .actions .btn {
@@ -386,41 +386,10 @@
       white-space: pre-line;
     }
 
-    .quick-templates {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 4px;
-    }
 
-    .template-btn {
-      min-height: 26px;
-      border-radius: 9px;
-      padding: 4px 3px;
-      background: #f1f5f9;
-      color: #1e3a8a;
-      border: 1px solid #dbeafe;
-      font-size: 10px;
-      font-weight: 850;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
 
-    .template-btn:hover {
-      background: #dbeafe;
-    }
 
-    .copy-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px;
-    }
 
-    .copy-row .btn {
-      min-height: 28px;
-      padding: 5px 4px;
-      font-size: 10.5px;
-    }
 
     .shift {
       display: grid;
@@ -484,6 +453,15 @@
       color: var(--text);
     }
 
+    .signature {
+      display: block;
+      margin-top: 10px;
+      text-align: right;
+      color: var(--muted);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
     @media (max-width: 1200px) {
       .app {
         width: min(1000px, calc(100% - 20px));
@@ -506,7 +484,7 @@
       }
 
       .day {
-        min-height: 218px;
+        min-height: 198px;
       }
     }
 
@@ -597,7 +575,7 @@
       }
 
       .day {
-        min-height: 222px;
+        min-height: 200px;
         border-radius: 16px;
         padding: 8px;
         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
@@ -669,7 +647,7 @@
       .day {
         padding: 7px;
         gap: 6px;
-        min-height: 216px;
+        min-height: 194px;
       }
 
       .inputs {
@@ -682,26 +660,9 @@
         gap: 4px;
       }
 
-      .quick-templates {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 3px;
-      }
 
-      .template-btn {
-        font-size: 9.2px;
-        min-height: 24px;
-        padding: 3px 2px;
-      }
 
-      .copy-row {
-        gap: 3px;
-      }
 
-      .copy-row .btn {
-        font-size: 9.5px;
-        min-height: 25px;
-        padding: 4px 2px;
-      }
 
       .actions .btn {
         min-height: 30px;
@@ -812,8 +773,6 @@
       .note,
       .actions,
       .inputs,
-      .quick-templates,
-      .copy-row,
       .remove {
         display: none !important;
       }
@@ -1095,7 +1054,9 @@
     </section>
 
     <section class="note">
-      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Godziny wybierasz co 30 minut. Na kafelku widać pracę, przerwę i czas netto w osobnych liniach. Możesz też używać szybkich szablonów zmian oraz kopiowania na następny dzień albo kolejny tydzień. Przerwa liczy się jako 5 minut za każdą pełną godzinę zmiany + 15 minut od 6h i kolejne 15 minut od 9h. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
+      <strong>Jak działa strona?</strong>
+      Wybierz miesiąc i rok, ustaw godziny zmiany z roletek co 30 minut, a potem kliknij <strong>„Zmiana”</strong>. Dzień możesz też oznaczyć jako <strong>„Wolne”</strong>. Na kafelku zobaczysz czas pracy, przerwę i netto, a na podsumowaniu miesiąca u góry strona policzy łączną liczbę godzin oraz procentowy udział godzin 16:00–20:00. Grafik zapisuje się automatycznie w tej przeglądarce, możesz go też zapisać do pliku albo wydrukować jako PDF.
+      <span class="signature">MM - 2026</span>
     </section>
   </main>
 
@@ -1116,6 +1077,8 @@
     const freeDaysEl = document.getElementById("freeDays");
 
     let schedule = loadSchedule();
+    let lastStartTime = localStorage.getItem("grafik-last-start") || "08:00";
+    let lastEndTime = localStorage.getItem("grafik-last-end") || "16:00";
 
     function storageKey() {
       return "grafik-miesieczny-v2";
@@ -1197,27 +1160,6 @@
 
     function netMinutesForShift(start, end) {
       return Math.max(0, shiftDurationMinutes(start, end) - breakMinutesForShift(start, end));
-    }
-
-    function addDaysToDateKey(key, daysToAdd) {
-      const [year, month, day] = key.split("-").map(Number);
-      const date = new Date(year, month - 1, day);
-      date.setDate(date.getDate() + daysToAdd);
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    }
-
-    function copyDayShifts(sourceKey, daysToAdd) {
-      const source = ensureDay(sourceKey);
-
-      if (source.shifts.length === 0) {
-        alert("Najpierw dodaj zmianę w tym dniu.");
-        return;
-      }
-
-      const targetKey = addDaysToDateKey(sourceKey, daysToAdd);
-      const target = ensureDay(targetKey);
-      target.free = false;
-      target.shifts = source.shifts.map((shift) => ({ ...shift }));
     }
 
     const timeValues = Array.from({ length: 48 }, (_, index) => {
@@ -1370,13 +1312,13 @@
         <div>
           <label>Od</label>
           <select class="start time-select" aria-label="Godzina rozpoczęcia">
-            ${buildTimeOptions("08:00")}
+            ${buildTimeOptions(lastStartTime)}
           </select>
         </div>
         <div>
           <label>Do</label>
           <select class="end time-select" aria-label="Godzina zakończenia">
-            ${buildTimeOptions("16:00")}
+            ${buildTimeOptions(lastEndTime)}
           </select>
         </div>
       `;
@@ -1397,7 +1339,7 @@
       addBtn.className = "btn";
       addBtn.dataset.action = "add-shift";
       addBtn.dataset.key = key;
-      addBtn.textContent = "+ Zmiana";
+      addBtn.textContent = "Zmiana";
 
       const freeBtn = document.createElement("button");
       freeBtn.type = "button";
@@ -1469,7 +1411,7 @@
         shifts.appendChild(row);
       });
 
-      card.append(head, inputs, templates, actions, copyRow, shifts);
+      card.append(head, inputs, actions, shifts);
       return card;
     }
 
@@ -1556,6 +1498,10 @@
 
         dayData.free = false;
         dayData.shifts.push({ start, end });
+        lastStartTime = start;
+        lastEndTime = end;
+        localStorage.setItem("grafik-last-start", start);
+        localStorage.setItem("grafik-last-end", end);
       }
 
       if (action === "toggle-free") {
