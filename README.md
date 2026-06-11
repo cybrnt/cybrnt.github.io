@@ -220,7 +220,7 @@
       border: 1px solid rgba(214, 222, 234, 0.9);
       border-radius: 24px;
       box-shadow: var(--shadow);
-      padding: 12px;
+      padding: 10px;
       overflow: visible;
       width: 100%;
     }
@@ -234,6 +234,7 @@
     }
 
     .weekdays {
+      display: none;
       margin-bottom: 10px;
       padding: 0 2px;
     }
@@ -1032,7 +1033,7 @@
     </section>
 
     <section class="note">
-      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Godziny wybierasz co 30 minut. Przerwa pokazuje się bezpośrednio na kafelku danego dnia i liczy się jako 5 minut za każdą pełną godzinę zmiany + 15 minut od 6h i kolejne 15 minut od 9h. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
+      <strong>Zapis:</strong> grafik zapisuje się automatycznie w tej przeglądarce. Godziny wybierasz co 30 minut. Przerwa pokazuje się bezpośrednio na kafelku danego dnia w formacie „Praca | Przerwa” i liczy się jako 5 minut za każdą pełną godzinę zmiany + 15 minut od 6h i kolejne 15 minut od 9h. Przycisk <strong>„Zapisz miesiąc”</strong> pobiera kopię wybranego miesiąca jako plik JSON, a <strong>„Drukuj / PDF”</strong> tworzy skompresowany widok pod jedną stronę A4 poziomo.
     </section>
   </main>
 
@@ -1132,16 +1133,24 @@
       return minutes;
     }
 
-    function buildTimeOptions(selectedValue) {
-      let options = "";
+    const timeValues = Array.from({ length: 48 }, (_, index) => {
+      const hour = Math.floor(index / 2);
+      const minute = index % 2 === 0 ? "00" : "30";
+      return `${String(hour).padStart(2, "0")}:${minute}`;
+    });
 
-      for (let hour = 0; hour < 24; hour++) {
-        for (const minute of [0, 30]) {
-          const value = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-          options += `<option value="${value}"${value === selectedValue ? " selected" : ""}>${value}</option>`;
-        }
+    const timeOptionsCache = new Map();
+
+    function buildTimeOptions(selectedValue) {
+      if (timeOptionsCache.has(selectedValue)) {
+        return timeOptionsCache.get(selectedValue);
       }
 
+      const options = timeValues
+        .map((value) => `<option value="${value}"${value === selectedValue ? " selected" : ""}>${value}</option>`)
+        .join("");
+
+      timeOptionsCache.set(selectedValue, options);
       return options;
     }
 
@@ -1256,6 +1265,7 @@
 
       const card = document.createElement("article");
       card.className = `day${data.free ? " free" : ""}${isWeekend ? " weekend" : ""}`;
+      card.dataset.key = key;
 
       const head = document.createElement("div");
       head.className = "day-head";
@@ -1290,38 +1300,16 @@
       const addBtn = document.createElement("button");
       addBtn.type = "button";
       addBtn.className = "btn";
+      addBtn.dataset.action = "add-shift";
+      addBtn.dataset.key = key;
       addBtn.textContent = "+ Zmiana";
-      addBtn.addEventListener("click", () => {
-        const start = card.querySelector(".start").value;
-        const end = card.querySelector(".end").value;
-
-        if (!start || !end) {
-          alert("Wpisz godzinę rozpoczęcia i zakończenia.");
-          return;
-        }
-
-        const dayData = ensureDay(key);
-        dayData.free = false;
-        dayData.shifts.push({ start, end });
-        saveSchedule();
-        renderCalendar();
-      });
 
       const freeBtn = document.createElement("button");
       freeBtn.type = "button";
       freeBtn.className = data.free ? "btn danger" : "btn secondary";
+      freeBtn.dataset.action = "toggle-free";
+      freeBtn.dataset.key = key;
       freeBtn.textContent = data.free ? "Usuń wolne" : "Wolne";
-      freeBtn.addEventListener("click", () => {
-        const dayData = ensureDay(key);
-        dayData.free = !dayData.free;
-
-        if (dayData.free) {
-          dayData.shifts = [];
-        }
-
-        saveSchedule();
-        renderCalendar();
-      });
 
       actions.append(addBtn, freeBtn);
 
@@ -1348,21 +1336,20 @@
 
         const daySummary = document.createElement("div");
         daySummary.className = "day-break-info";
-        daySummary.textContent = `Przerwa dnia: ${formatBreak(dayBreakMinutes)} | Praca: ${formatHours(minutesToHours(dayMinutes))}`;
+        daySummary.textContent = `Praca: ${formatHours(minutesToHours(dayMinutes))} | Przerwa: ${formatBreak(dayBreakMinutes)}`;
         shifts.appendChild(daySummary);
       }
 
       data.shifts.forEach((shift, index) => {
         const duration = minutesToHours(shiftDurationMinutes(shift.start, shift.end));
         const late = minutesToHours(overlapMinutes(shift.start, shift.end));
-        const breakMinutes = breakMinutesForShift(shift.start, shift.end);
 
         const row = document.createElement("div");
         row.className = `shift${late > 0 ? " late" : ""}`;
         row.innerHTML = `
           <div>
             <strong>${shift.start}–${shift.end}</strong>
-            <small>Razem: ${formatHours(duration)} | 16–20: ${formatHours(late)} | Przerwa: ${formatBreak(breakMinutes)}</small>
+            <small>Razem: ${formatHours(duration)} | 16–20: ${formatHours(late)}</small>
           </div>
         `;
 
@@ -1371,12 +1358,9 @@
         remove.className = "remove";
         remove.title = "Usuń zmianę";
         remove.textContent = "×";
-        remove.addEventListener("click", () => {
-          const dayData = ensureDay(key);
-          dayData.shifts.splice(index, 1);
-          saveSchedule();
-          renderCalendar();
-        });
+        remove.dataset.action = "remove-shift";
+        remove.dataset.key = key;
+        remove.dataset.index = index;
 
         row.appendChild(remove);
         shifts.appendChild(row);
@@ -1439,6 +1423,45 @@
       link.remove();
       URL.revokeObjectURL(url);
     }
+
+    calendar.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+
+      const key = button.dataset.key;
+      const action = button.dataset.action;
+      const card = button.closest(".day");
+      const dayData = ensureDay(key);
+
+      if (action === "add-shift") {
+        const start = card.querySelector(".start").value;
+        const end = card.querySelector(".end").value;
+
+        if (!start || !end) {
+          alert("Wybierz godzinę rozpoczęcia i zakończenia.");
+          return;
+        }
+
+        dayData.free = false;
+        dayData.shifts.push({ start, end });
+      }
+
+      if (action === "toggle-free") {
+        dayData.free = !dayData.free;
+
+        if (dayData.free) {
+          dayData.shifts = [];
+        }
+      }
+
+      if (action === "remove-shift") {
+        const index = Number(button.dataset.index);
+        dayData.shifts.splice(index, 1);
+      }
+
+      saveSchedule();
+      renderCalendar();
+    });
 
     document.getElementById("todayBtn").addEventListener("click", setCurrentMonth);
     document.getElementById("saveMonthBtn").addEventListener("click", saveSelectedMonthToFile);
